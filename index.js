@@ -19,7 +19,7 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 app.set('port', process.env.PORT || 8080);
 
 // Basic route
-app.get ('/', (req, res) => {
+app.get('/', (req, res) => {
     res.send('Main Page');
 });
 
@@ -28,7 +28,7 @@ app.get ('/', (req, res) => {
 app.post('/register', async (req, res) => {
     try {
         const user = new User(req.body);
-        const userData = await user.save(); 
+        const userData = await user.save();
         return res.status(200).json({
             success: true,
             userData
@@ -43,8 +43,39 @@ app.post('/register', async (req, res) => {
 });
 
 // User login route
-app.post('/login', (req, res) => {
-
+app.post('/login', async (req, res) => {
+    const typedEmail = req.body.email;
+    const typedPassword = req.body.password;
+    // Find email in database
+    try {
+        const user = await User.findOne({ email: typedEmail });
+        if (!user) {
+            return res.status(400).json({
+                loginSuccess: false,
+                message: "Cannot find email."
+            })
+        }
+        // Compare password
+        user.comparePassword(typedPassword, (err, isMatch) => {
+            if (err) return res.status(400).json({ 
+                loginSuccess: false, 
+                err 
+            });
+            if (!isMatch) {
+                return res.status(400).json({
+                    loginSuccess: false,
+                    message: "Incorrect password."
+                })
+            }
+            return res.status(200).json({
+                loginSuccess: true,
+                message: "Login successful."
+            });
+        })
+    }
+    catch (err) {
+        return res.status(400).json({ loginSuccess: false, err });
+    }
 })
 
 app.listen(app.get('port'), () => {
