@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -17,7 +19,7 @@ const userSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now   
+        default: Date.now
     },
     role: {
         type: Number,
@@ -31,4 +33,17 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('User', userSchema);
+// Encrypt password before saving the user document data
+userSchema.pre('save', async function(next) { 
+    if (!this.isModified('password')) return;
+    
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+        return next(err);
+    }
+});
+
+const User = mongoose.model('User', userSchema)
+module.exports = User;
