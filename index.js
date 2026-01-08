@@ -1,12 +1,17 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
-const User = require('./models/users');
+const { User } = require('./models/users');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+const { auth } = require('./middleware/auth');
 
 dotenv.config();
 const app = express();
-app.use(bodyParser.json());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI).then(() => {
@@ -24,59 +29,94 @@ app.get('/', (req, res) => {
 });
 
 // User Registration Route
-//Return 200 if success, else return 400 with err message
-app.post('/register', async (req, res) => {
+// Return 200 if success, else return 400 with err message
+app.post('/api/users/register', async (req, res) => {
     try {
         const user = new User(req.body);
+        if (!user.name || !user.email || !user.password) {
+            return res.status(400).json({
+                success: false,
+                message: "Name, email, and password are required."
+            });
+        }
         const userData = await user.save();
         return res.status(200).json({
             success: true,
-            userData
+            data: userData
         });
     } catch (err) {
         console.error(err);
         return res.status(400).json({
             success: false,
-            err: err.message
+            message: err.message
         });
     }
 });
 
 // User login route
-app.post('/login', async (req, res) => {
-    const typedEmail = req.body.email;
-    const typedPassword = req.body.password;
-    // Find email in database
+app.post('/api/users/login', async (req, res) => {
     try {
-        const user = await User.findOne({ email: typedEmail });
+        const { email, password } = req.body;
+
+        // Find user by email
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({
-                loginSuccess: false,
-                message: "Cannot find email."
-            })
+                success: false,
+                message: "Auth failed, email not found"
+            });
         }
+
         // Compare password
-        user.comparePassword(typedPassword, (err, isMatch) => {
-            if (err) return res.status(400).json({ 
-                loginSuccess: false, 
-                err 
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Auth failed, wrong password"
             });
-            if (!isMatch) {
-                return res.status(400).json({
-                    loginSuccess: false,
-                    message: "Incorrect password."
-                })
-            }
-            return res.status(200).json({
-                loginSuccess: true,
-                message: "Login successful."
+        }
+
+        // Generate token
+        const token = await user.generateToken();
+        res.cookie("x_auth", token)
+            .status(200)
+            .json({
+                success: true,
+                data: {
+                    userId: user._id
+                }
             });
-        })
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
     }
-    catch (err) {
-        return res.status(400).json({ loginSuccess: false, err });
+});
+
+// Logout route
+app.get('/api/users/logout', auth, async (req, res) => {
+    try {
+        await req.user.clearToken();
+        res.clearCookie('x_auth');
+        res.status(200).json({ success: true, message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
     }
-})
+});
+
+// Auth 
+app.get('/api/users/auth', auth, (req, res)=> {
+    res.status(200).json({
+        success: true,
+        data: {
+            _id: req.user._id,
+            isAdmin: req.user.role === 0 ? false : true,
+            isAuth: true,
+            email: req.user.email,
+            name: req.user.name,
+            role: req.user.role,
+            createdAt: req.user.createdAt
+        }
+    });
+}); 
 
 app.listen(app.get('port'), () => {
     console.log(`Server running on port ${app.get('port')}`);
