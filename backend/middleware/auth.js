@@ -8,11 +8,13 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Auth failed, no token' });
         }
 
+        // Verify token and find user
         const user = await User.findByToken(token);
         if (!user) {
             return res.status(401).json({ success: false, message: 'Auth failed, user not found' });
         }
 
+        // Attach user and token to request object
         req.token = token;
         req.user = user;
         next();
