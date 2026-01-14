@@ -29,9 +29,13 @@ app.get('/', (req, res) => {
     res.send('Main Page');
 });
 
+app.get('/api/test', (req, res) => {
+    res.send("API is working");
+});
+
 // User routes
-app.use('/user', userRouter);
-app.use('/auth', authRouter);
+app.use('/api/user', userRouter);
+app.use('/api/auth', authRouter);
 
 // Start the server
 app.listen(app.get('port'), () => {

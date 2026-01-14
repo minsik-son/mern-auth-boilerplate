@@ -27,7 +27,7 @@ const registerUser = async (req, res) => {
 
 // User update controller
 const updateUser = async (req, res) => {
-    try { 
+    try {
         const userId = req.user._id;
         const updateData = req.body;
         const userEmail = updateData.email;
@@ -128,4 +128,23 @@ const logoutUser = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, updateUser, deleteUser, loginUser, logoutUser };
+//User Information controller
+const getUserInfo = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId).select('-password -token');
+        return res.status(200).json({
+            success: true,
+            data: user
+        });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(400).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+module.exports = { registerUser, updateUser, deleteUser, loginUser, logoutUser, getUserInfo };
