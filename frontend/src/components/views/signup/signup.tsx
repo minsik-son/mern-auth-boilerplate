@@ -1,10 +1,11 @@
 import { Button, Input, Form } from 'antd';
 import { useState } from 'react';
 import { postData, type UserData } from '../../../services/api';
+import { useNavigate } from 'react-router-dom';
 
 // Signup Page Component
 function signupPage() {
-
+    const navigate = useNavigate();
     const [name, setName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -75,7 +76,7 @@ function signupPage() {
                             onChange={passwordHandler}
                         />
                     </Form.Item>
-                    <Button type="primary" block className="mt-4 h-10" htmlType="submit"> 
+                    <Button type="primary" block className="mt-4 h-10" htmlType="submit" onClick={()=> navigate('/login')}> 
                         Sign Up
                     </Button>
                 </Form>

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { fetchData, type UserData } from '../../../services/api';
+import { fetchData, deleteData, type UserData } from '../../../services/api';
 import { Button } from 'antd';
+
 
 // User Profile Page Component
 function userProfilePage() {
@@ -36,6 +37,9 @@ function userProfilePage() {
                 <p>User email: {email}</p>
                 <Button type="primary" onClick={() => navigate('/update')}>
                     Update Profile
+                </Button>
+                <Button type="default" onClick={() => {deleteData('/'); alert('Account deleted successfully'); navigate('/')}}>
+                    Delete Account
                 </Button>
             </div>
         </div>

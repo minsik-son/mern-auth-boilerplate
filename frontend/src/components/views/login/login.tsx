@@ -42,18 +42,6 @@ function LoginPage() {
         }
     }
 
-    const loginCheck = async() => {
-        try {
-            const users = await fetchData('/users');
-            if(users) {
-                console.log("Fetched users:", users);
-                alert('Fetched users, check console');
-            }
-        } catch (error) {
-            console.error("Error fetching users:", error);
-        }
-    }
-
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
