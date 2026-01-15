@@ -4,16 +4,31 @@ import LoginPage from './components/views/login/login'
 import SignupPage from './components/views/signup/signup'
 import UserProfilePage from './components/views/userProfile/userProfile'
 import UserUpdatePage from './components/views/userUpdate/userUpdate'
+import { fetchData, type UserData } from './services/api';
+
 
 // 메인 화면 컴포넌트 (편의상 분리)
 function Home() {
   const navigate = useNavigate(); // 이동을 위한 함수
 
+  const handleLoginClick = async () => {
+    try {
+      // Try to fetch user data from a protected endpoint
+      await fetchData<UserData>('/');
+      // If the request succeeds, the user has a valid token
+      navigate('/profile');
+    } catch (error) {
+      // If the request fails (e.g., 401 Unauthorized), the user is not logged in
+      console.error("Authentication check failed:", error);
+      navigate('/login');
+    }
+  };
+
   return (
-    <div className="App">
-      <h1>Fullstack App</h1>
-      <Button type="primary" onClick={() => navigate('/login')}>
-        Login 페이지로 이동
+    <div className="mx-auto text-center p-4">
+      <h1>Login Auth Bolierplate</h1>
+      <Button className='mt-4' type="primary" onClick={handleLoginClick}>
+        Log in
       </Button>
     </div>
   );

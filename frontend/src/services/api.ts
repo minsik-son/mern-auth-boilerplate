@@ -56,12 +56,23 @@ export const updateData = async (path: string, userData: UserData): Promise<User
   }
 };
 
+// Function to delete data from the server
 export const deleteData = async (path: string): Promise<{ message: string }> => {
   try {
     const response: AxiosResponse<ApiResponse<null>> = await api.delete(path);
     return { message: response.data.message || 'Deleted successfully' }; 
   } catch (error) {
     console.error("Data deleting err:", error);
+    throw error;
+  }
+};
+
+export const logoutUser = async (path: string): Promise<{ message: string }> => {
+  try {
+    const response: AxiosResponse<ApiResponse<null>> = await api.get(path);
+    return { message: response.data.message || 'Logged out successfully' }; 
+  } catch (error) {
+    console.error("Logout error:", error);
     throw error;
   }
 };

@@ -1,6 +1,6 @@
 import { Button, Input, Form } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchData, postData, type UserData } from '../../../services/api';
 
 // Login Page Component
@@ -17,17 +17,16 @@ function LoginPage() {
     const passwordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPassword(e.target.value);
     }
-    
+
     // Form submit handler
-    const handleSubmit = async() => {
+    const handleSubmit = async () => {
         const body: UserData = {
             email,
             password
         };
-        try { 
+        try {
             const response = await postData('/login', body);
             if (response) {
-                alert('Login successful');
                 console.log("Login successful:", response);
                 navigate('/profile')
             }
@@ -42,10 +41,16 @@ function LoginPage() {
         }
     }
 
+    useEffect(() => {
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            navigate('/profile');
+        }
+    }, [navigate]);
+
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center">로그인</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center">Login Page</h2>
 
                 <Form layout="vertical" onFinish={handleSubmit}>
                     <Form.Item label="Email">
@@ -54,15 +59,16 @@ function LoginPage() {
                     <Form.Item label="Password">
                         <Input.Password value={password} onChange={passwordHandler} />
                     </Form.Item>
-                    <Form.Item label="signup">
+                    <Form.Item>
+                        <Button type="primary" block className="h-10" htmlType="submit">
+                            Login
+                        </Button>
                     </Form.Item>
-                    <Button type="primary" block className="mt-4 h-10" htmlType="submit">
-                        Login
-                    </Button>
-                    <Button type="primary" block className="mt-4 h-10" onClick={() => navigate('/signup')}>
-                        Sign Up
-                    </Button>
-
+                    <Form.Item className="mt-4">
+                        <Button type="primary" block className="h-10" onClick={() => navigate('/signup')}>
+                            Sign Up
+                        </Button>
+                    </Form.Item>
                 </Form>
             </div>
         </div>

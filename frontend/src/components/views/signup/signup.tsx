@@ -32,7 +32,7 @@ function signupPage() {
         try { 
             const response = await postData('/register', body);
             if (response) {
-                alert('Submitted');
+                alert('Sign up successful');
                 console.log("Signup successful:", response);
             }
             else {
@@ -76,9 +76,16 @@ function signupPage() {
                             onChange={passwordHandler}
                         />
                     </Form.Item>
+                    <Form.Item>
                     <Button type="primary" block className="mt-4 h-10" htmlType="submit" onClick={()=> navigate('/login')}> 
                         Sign Up
                     </Button>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="default" block className="mt-4 h-10" onClick={() => navigate('/login')}>
+                            Back to Login
+                        </Button>
+                    </Form.Item>
                 </Form>
             </div>
         </div>
